@@ -27,11 +27,13 @@ try:
     import mechanize
 except ImportError:
     print "This API requires module: mechanize"
+    sys.exit(1)
 
 try:
     from bs4 import BeautifulSoup
 except ImportError:
     print "This API requires module: BeautifulSoup(bs4)"
+    sys.exit(1)
 
 # To add support of more languages, just edit this:
 language_list = {
@@ -72,6 +74,9 @@ class API:
         self._br.form['name'] = self._user
         self._br.form['pass'] = self._pass
         response = self._br.submit()
+        forms_list = [i for i in self._br.forms()]
+        if len(forms_list) > 0:
+            return False
         # TODO implement method to check whether logged in
         # TODO handle multiple login
         self.__is_logged_in = True
@@ -115,5 +120,23 @@ class API:
         CE - Compilation error
         RE - Runtime Error
         """
+        print "================================"
+        print "Respone:"
         response = self._br.open(self.URL + '/status/' + question_code)
-        response = BeautifulSoup(response, 'html.parser')
+        # print response.read()
+        response = BeautifulSoup(response.read(), 'html.parser')
+        tables = response.findChildren('table')
+        table = tables[0]
+        rows = table.findChildren(['tr', 'th'])
+        result = ''
+        flag = False
+        for row in rows:
+            cells = row.findChildren('td')
+            for cell in cells:
+                if cell.string == submission_id:
+                    flag = True
+                    result = cell.string
+                    break
+            if flag:
+                break
+        print result

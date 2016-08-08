@@ -1,9 +1,8 @@
 import CodeChef
 
 c = CodeChef.API('buildrit', 'CSEdepartment')
-c._login()
-'''
+c.login()
 f = open('test.cpp')
 source = f.read()
-c.submit('TEST', source, 'cpp')
-'''
+id = c.submit('TEST', source, 'cpp')
+c.check_result(id, 'TEST')
