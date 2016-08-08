@@ -21,26 +21,4 @@ This is a python API for accessing CodeChef features namely :
 use coresponding method to install it in other systems.
 
 ###Usage:
-
-Using this is simple:
-
-first import CodeChef.py to your program.
-
-In below example CodeChef.py is in same directory as the program.
-
-<code>
-import CodeChef
-
-chef = CodeChef.API('buildrit', 'CSEdepartment')
-chef.login()
-file = open('test.cpp')
-source = file.read()
-submission_id = chef.submit('TEST', source, 'cpp')
-print 'Id is :', submission_id
-print chef.check_result(submission_id, 'TEST')
-chef.logout()
-
-</code>
-
-
 sample is provided in the repositary to be tested.
