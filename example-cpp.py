@@ -1,6 +1,6 @@
 import CodeChef
 
-c = CodeChef.API('buildrit', 'CSEdepartment')
+c = CodeChef.API('username', 'password')
 c.login()
 f = open('test.cpp')
 source = f.read()
