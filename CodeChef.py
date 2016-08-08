@@ -42,6 +42,12 @@ class InternetConnectionFailedException(Exception): pass
 # To add support of more languages, just edit this:
 language_list = {
     'cpp': '44',
+    'c': '11',
+    'c#': '27',
+    'java': '10',
+    'php': '29',
+    'python3': '116',
+    'python2': '4'
 }
 
 
