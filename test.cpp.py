@@ -5,4 +5,6 @@ c.login()
 f = open('test.cpp')
 source = f.read()
 id = c.submit('TEST', source, 'cpp')
-c.check_result(id, 'TEST')
+print 'Id is :', id
+print c.check_result(id, 'TEST')
+c.logout()

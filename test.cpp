@@ -10,5 +10,6 @@ if(a==42)
 break;
 cout<<a<<endl;
 }
+while(1) {}
 return 0;
 } 

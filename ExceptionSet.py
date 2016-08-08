@@ -7,3 +7,6 @@ class RequiresLoginException(Exception):
 
 class IncorrectLanguageException(Exception):
     pass
+
+class InternetConnectionFailedException(Exception):
+    pass

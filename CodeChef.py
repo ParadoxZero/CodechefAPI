@@ -26,14 +26,12 @@ if sys.version_info[0] > 2:
 try:
     import mechanize
 except ImportError:
-    print "This API requires module: mechanize"
-    sys.exit(1)
+    raise Exception("This API requires module: mechanize")
 
 try:
     from bs4 import BeautifulSoup
 except ImportError:
-    print "This API requires module: BeautifulSoup(bs4)"
-    sys.exit(1)
+    raise Exception("This API requires module: BeautifulSoup(bs4)")
 
 # To add support of more languages, just edit this:
 language_list = {
@@ -57,23 +55,32 @@ class API:
         self._pass = password
 
     def __del__(self):
-        self.logout()
+        if self.__is_logged_in:
+            try:
+                self.logout()
+            except ExceptionSet.InternetConnectionFailedException:
+                sys.exit(1)
 
     def login(self):
         """
         This functions is used to login to CodeChef
         No error is raised in unsuccessful login, hence should be used carefully
-        Instances of multiple login will create problem, so be sure to not be logged in somwehere else.
+        Instances of multiple  login will create problem, so be sure to not be logged in somwehere else.
         (Sorry for the trouble, will fix it soon)
         """
         if self.__is_logged_in:
             raise ExceptionSet.AlreadyLoggedInException
-        self._br.open(self.URL)
+        try:
+            self._br.open(self.URL)
+        except Exception:  # TODO get more specific exception for better stack trace
+            raise ExceptionSet.InternetConnectionFailedException
         self._br.select_form(nr=0)
-        print self._br.form
         self._br.form['name'] = self._user
         self._br.form['pass'] = self._pass
-        response = self._br.submit()
+        try:
+            self._br.submit()
+        except Exception:
+            raise ExceptionSet.InternetConnectionFailedException
         forms_list = [i for i in self._br.forms()]
         if len(forms_list) > 0:
             return False
@@ -83,7 +90,10 @@ class API:
         return True
 
     def logout(self):
-        self._br.open(self.URL + '/logout')
+        try:
+            self._br.open(self.URL + '/logout')
+        except Exception:
+            raise ExceptionSet.InternetConnectionFailedException
         self.__is_logged_in = False
         return True
 
@@ -97,19 +107,19 @@ class API:
         """
         if not self.__is_logged_in:
             raise ExceptionSet.RequiresLoginException
-        self._br.open(self.URL + '/submit/' + question_code)
-        for form in self._br.forms():
-            print form.name, form
+        try:
+            self._br.open(self.URL + '/submit/' + question_code)
+        except Exception:  # TODO get more specific exception for better stack trace
+            raise ExceptionSet.InternetConnectionFailedException
         self._br.select_form(nr=0)
         self._br.form['program'] = source
         try:
             self._br.form['language'] = [language_list[lang]]
         except KeyError:
             raise ExceptionSet.IncorrectLanguageException
-        self._br.submit()
-        self._br.open(self.URL + '/logout')
+        response = self._br.submit()
         ''' The submission id'''
-        return self._br.geturl().split('/')[-1]  # String
+        return str(response.geturl()).split('/')[-1]# String
 
     def check_result(self, submission_id, question_code):
         """
@@ -120,23 +130,21 @@ class API:
         CE - Compilation error
         RE - Runtime Error
         """
-        print "================================"
-        print "Respone:"
-        response = self._br.open(self.URL + '/status/' + question_code)
-        # print response.read()
-        response = BeautifulSoup(response.read(), 'html.parser')
-        tables = response.findChildren('table')
-        table = tables[0]
-        rows = table.findChildren(['tr', 'th'])
-        result = ''
-        flag = False
-        for row in rows:
-            cells = row.findChildren('td')
-            for cell in cells:
-                if cell.string == submission_id:
-                    flag = True
-                    result = cell.string
-                    break
-            if flag:
-                break
-        print result
+
+        try:
+            response = self._br.open(self.URL + '/status/' + question_code)
+        except Exception:  # TODO get more specific exception for better stack trace
+            raise ExceptionSet.InternetConnectionFailedException
+        response_html = response.read()
+        start = response_html.find(submission_id)
+        response_html = response_html[start:]
+        while not response_html.startswith("span"):
+            response_html = response_html[1:]
+        while response_html[0] != '=':
+            response_html = response_html[1:]
+        response_html = response_html[2:]
+        ans = ""
+        while response_html[0] != "'":
+            ans += response_html[0]
+            response_html = response_html[1:]
+        return ans + '\0'
