@@ -28,11 +28,6 @@ try:
 except ImportError:
     raise Exception("This API requires module: mechanize")
 
-try:
-    from bs4 import BeautifulSoup
-except ImportError:
-    raise Exception("This API requires module: BeautifulSoup(bs4)")
-
 
 class AlreadyLoggedInException(Exception): pass
 class RequiresLoginException(Exception): pass

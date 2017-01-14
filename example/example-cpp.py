@@ -1,4 +1,4 @@
-import CodeChef
+from codechefpy import CodeChef
 
 c = CodeChef.API('username', 'password')
 c.login()
