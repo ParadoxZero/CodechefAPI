@@ -20,6 +20,7 @@ Possible future additions:
 """
 
 import sys
+from bs4 import BeautifulSoup as bs
 
 if sys.version_info[0] > 2:
     raise Exception("This API is designed for only python 2.7")
@@ -85,13 +86,26 @@ class API:
         self._br.form['name'] = self._user
         self._br.form['pass'] = self._pass
         try:
-            self._br.submit()
+            response = self._br.submit()
         except Exception:
             raise InternetConnectionFailedException
+
+
+
         forms_list = [i for i in self._br.forms()]
         if len(forms_list) > 0:
             return False
         # TODO handle multiple login
+        # removing extra sessions using simple scraping and form handling
+        while self._br.geturl() == 'https://www.codechef.com/session/limit':
+            self._br.select_form(
+                predicate=lambda frm: 'id' in frm.attrs and frm.attrs['id'] == 'session-limit-page')
+            soup = bs(response, 'html5lib')
+            value = soup.find('input', attrs={'class', 'form-radio'})['value']
+            self._br.form['sid'] = [value]
+            self._br.method = "POST"
+            response = self._br.submit()
+
         self.__is_logged_in = True
         return True
 
